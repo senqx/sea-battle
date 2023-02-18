@@ -1,5 +1,6 @@
 #include <exception>
 #include <iostream>
+#include <string>
 #include <vector>
 #include "SBGame.hpp"
 #include "Socket/Socket.hpp"
@@ -94,7 +95,6 @@ int getPort() {
 	return port;
 }
 
-
 Socket* hostServer(int& port, Socket& s) {
 	std::cout << "Hosting server on port: " << port << std::endl;
 
@@ -119,12 +119,6 @@ void connect(std::string& ip, int& port, Socket& s) {
 		std::cerr << e.what() << std::endl;
 		exit(1);
 	}
-}
-
-void startGame() {
-	SBGame game;
-	game.print();
-	game.setUpFleet();
 }
 
 int handle_arguments(int argc, char** argv, std::string& ip, int& port) {
@@ -204,6 +198,7 @@ int main(int argc, char* argv[]) {
 	int port;
 	
 	Socket s(IPV4, TCP);
+	SBGame game;
 	
 	int res = handle_arguments(argc, argv, ip, port);
 	
@@ -211,50 +206,16 @@ int main(int argc, char* argv[]) {
 		// You are Hosting
 		Socket* ans = hostServer(port, s);
 		YOU_ARE_HOST = true;
-		while(true) {
-			std::string msg; 
-			try {
-				msg = ans->Read(1024);
-			} catch(std::exception& e) {
-				std::cerr<< e.what() << std::endl;
-				delete ans;
-				exit(1);
-			}
-			if(msg == "") {
-				std::cout << "Client closed the connection" << std::endl;
-				delete ans;
-				break;
-			}
-			std::cout << "Got message: " << msg << std::endl;
-			ans->Write(msg);
-		}
+		game.start();
+		game.checkReady(ans);
+		game.startCommunication(ans, YOU_ARE_HOST);	
 	} else if(res == 0) {
 		// You are Client
 		connect(ip, port, s);
 		YOU_ARE_HOST = false;
-		while(true) {
-			std::cout << "Enter input: ";
-			std::string msg;
-			std::getline(std::cin, msg);
-			try {
-				s.Write(msg);
-			} catch(std::exception& e) {
-				std::cerr << e.what() << std::endl;
-				std::cout << "Server closed" << std::endl;
-				break;
-			}
-			std::string ans;
-			try {
-				ans = s.Read(1024);
-			} catch(std::exception& e) {
-				std::cerr << e.what() << std::endl;
-			}
-			if(ans == "") {
-				std::cout << "Server closed!" << std::endl;
-				break;
-			}
-			std::cout << "Got response: " << ans << std::endl;
-		}
+		game.start();
+		game.checkReady(&s);
+		game.startCommunication(&s, YOU_ARE_HOST);	
 	} else {
 		exit(1);
 	}
