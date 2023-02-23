@@ -83,62 +83,56 @@ void SBGame::put(char c, int i, int j, bool onOpntMap) noexcept {
 }
 
 void SBGame::destroy(int& i, int& j, bool onOpntMap) noexcept {
-	//char (&map)[10][10] = onOpntMap? _opntMap: _yourMap;
-	char (*map)[10][10];
-	if(onOpntMap) {
-		map = &(this->_opntMap);
-	} else {
-		map = &(this->_yourMap);
-	}
+	char (&map)[10][10] = onOpntMap? _opntMap: _yourMap;
 
 	// Up
-	for(int k = i; (k > 0) && ((*map)[k][j] == '*'); --k) {
+	for(int k = i; (k > 0) && (map[k][j] == '*'); --k) {
 		if(j > 0) {
 			put('X', k - 1, j - 1, onOpntMap);
 		}
 		if(j < 9) {
 			put('X', k - 1, j + 1, onOpntMap);
 		}
-		if((*map)[k - 1][j] != '*') {
+		if(map[k - 1][j] != '*') {
 			put('X', k - 1, j, onOpntMap);
 		}
 	}
 	
 	// Down
-	for(int k = i; (k < 9) && ((*map)[k][j] == '*'); ++k) {
+	for(int k = i; (k < 9) && (map[k][j] == '*'); ++k) {
 		if(j > 0) {
 			put('X', k + 1, j - 1, onOpntMap);
 		}
 		if(j < 9) {
 			put('X', k + 1, j + 1, onOpntMap);
 		}
-		if((*map)[k + 1][j] != '*') {
+		if(map[k + 1][j] != '*') {
 			put('X', k + 1, j, onOpntMap);
 		}
 	}
 
 	// Left
-	for(int k = j; (k > 0) && ((*map)[i][k] == '*'); --k) {
+	for(int k = j; (k > 0) && (map[i][k] == '*'); --k) {
 		if(i > 0) {
 			put('X', i - 1, k - 1, onOpntMap);
 		}
 		if(i < 9) {
 			put('X', i + 1, k - 1, onOpntMap);
 		}
-		if((*map)[i][k - 1] != '*') {
+		if(map[i][k - 1] != '*') {
 			put('X', i, k - 1, onOpntMap);
 		}
 	}
 	
 	// Right
-	for(int k = j; (k < 9) && ((*map)[i][k] == '*'); ++k) {
+	for(int k = j; (k < 9) && (map[i][k] == '*'); ++k) {
 		if(i > 0) {
 			put('X', i - 1, k + 1, onOpntMap);
 		}
 		if(i < 9) {
 			put('X', i + 1, k + 1, onOpntMap);
 		}
-		if((*map)[i][k + 1] != '*') {
+		if(map[i][k + 1] != '*') {
 			put('X', i, k + 1, onOpntMap);
 		}
 	}
@@ -506,11 +500,15 @@ void SBGame::processStatus(char& status, int& i, int& j) noexcept {
 		exit(0);
 	}
 	
-	_opntMap[i][j] = '*';
-	draw('#', i, j, 42);	
-	if(status == 'D') {
+	if(status == '#') {
+		_opntMap[i][j] = '*';
+	} else if(status == 'D') {
+		_opntMap[i][j] = '*';
 		destroy(i, j, true);
+	} else {
+		_opntMap[i][j] = status;
 	}
+	draw(status, i, j, 42);	
 }
 
 char SBGame::getHitStatus(int& i, int& j) noexcept {
