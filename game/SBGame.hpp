@@ -1,7 +1,6 @@
 #ifndef __S_B_GAME_
 #define __S_B_GAME_
 
-#include <iostream>
 #include "../Socket/Socket.hpp"
 
 class SBGame {
@@ -10,7 +9,7 @@ class SBGame {
 	static constexpr int OFFSET = WIDTH * 5 + 2;
 	char _mainScreen[WIDTH * HEIGHT];
 	char _yourMap[10][10];
-	char _opntMap[10][10]; 
+	char _opntMap[10][10];
 
 	// Put a boat vertically or horizontaly?
 	static bool getVHInput() noexcept;
@@ -56,11 +55,11 @@ class SBGame {
 
 public:
 	// Default - Creates empty maps
-	SBGame(); 
-	
+	SBGame();
+
 	// Print the game-screen
 	void print() const noexcept;
-	
+
 	// Get user input to setup boats
 	bool setupFleet() noexcept;
 

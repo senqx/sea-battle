@@ -1,7 +1,7 @@
 #ifndef __IP_PORT_CONFIG__
 #define __IP_PORT_CONFIG__
 
-#include <iostream>
+#include <string>
 
 bool isValidIp(std::string& ip);
 

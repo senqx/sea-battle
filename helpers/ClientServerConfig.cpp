@@ -1,5 +1,12 @@
 #include "ClientServerConfig.hpp"
 
+#include <iostream>
+#include <string>
+#include <vector>
+
+#include "../Socket/Socket.hpp"
+#include "IPPortConfig.hpp"
+
 Socket* hostServer(int& port, Socket& s) {
 	std::cout << "Hosting server on port: " << port << std::endl;
 
@@ -17,7 +24,7 @@ Socket* hostServer(int& port, Socket& s) {
 
 void connect(std::string& ip, int& port, Socket& s) {
 	std::cout << "Attempting to connect to " << ip << ':' << port << std::endl;
-	
+
 	try {
 		s.Connect(ip, port);
 	} catch(const SocketException& e) {
@@ -29,10 +36,10 @@ void connect(std::string& ip, int& port, Socket& s) {
 int handle_arguments(int argc, char** argv, std::string& ip, int& port) {
 	if(argc == 1) {
 		std::cout << "[H]ost or [C]onnect? : ";
-		
+
 		std::string answer;
 		std::cin >> answer;
-		
+
 		if(answer[0] == 'H' || answer[0] == 'h') {
 			port = getPort();
 			return 1;
@@ -41,7 +48,7 @@ int handle_arguments(int argc, char** argv, std::string& ip, int& port) {
 			port = getPort();
 			return 0;
 		}
-		
+
 		std::cerr << "Please, give valid answer" << std::endl;
 		return -1;
 	} else if(argc == 3 || argc == 4) {
@@ -75,7 +82,7 @@ int handle_arguments(int argc, char** argv, std::string& ip, int& port) {
 				std::cerr << "Wrong IP!" << std::endl;
 				return -1;
 			}
-			
+
 			try {
 				port = std::stoi(std::string(vals[1]));
 			} catch(std::exception& e) {

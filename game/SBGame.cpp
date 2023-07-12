@@ -1,7 +1,13 @@
 #include "SBGame.hpp"
 
+#include <exception>
+#include <iostream>
+#include <string>
+
+#include "../Socket/Socket.hpp"
+
 bool SBGame::getVHInput() noexcept {
-	std::cout << "Place [H]orisontal or [V]ertical? : "; 
+	std::cout << "Place [H]orisontal or [V]ertical? : ";
 	std::string s;
 	while(true) {
 		if(std::cin.peek() == EOF) {
@@ -39,19 +45,19 @@ int SBGame::getCoordinates(bool& isVertical, int& len) noexcept {
 		}
 
 		if(isVertical) {
-			if((i >= 0) && (i <= (10 - len)) && (j >= 0) && (j < 10)) { 
+			if((i >= 0) && (i <= (10 - len)) && (j >= 0) && (j < 10)) {
 				break;
 			}
 		} else {
-			if((j >= 0) && (j <= (10 - len)) && (i >= 0) && (i < 10)) { 
+			if((j >= 0) && (j <= (10 - len)) && (i >= 0) && (i < 10)) {
 				break;
 			}
 		}
 		std::cout << "Please, enter valid coordinates: ";
 	}
-	return i * 10 + j;	
+	return i * 10 + j;
 }
-	
+
 void SBGame::clearScreen() const noexcept
 {
 	#ifdef _WIN32
@@ -97,7 +103,7 @@ void SBGame::destroy(int& i, int& j, bool onOpntMap) noexcept {
 			put('X', k - 1, j, onOpntMap);
 		}
 	}
-	
+
 	// Down
 	for(int k = i; (k < 9) && (map[k][j] == '*'); ++k) {
 		if(j > 0) {
@@ -123,7 +129,7 @@ void SBGame::destroy(int& i, int& j, bool onOpntMap) noexcept {
 			put('X', i, k - 1, onOpntMap);
 		}
 	}
-	
+
 	// Right
 	for(int k = j; (k < 9) && (map[i][k] == '*'); ++k) {
 		if(i > 0) {
@@ -169,7 +175,7 @@ bool SBGame::isDestroyed(int& i, int& j) const noexcept {
 			break;
 		}
 	}
-	
+
 	// Left
 	for(int k = j; k > 0; --k) {
 		if(_yourMap[i][k] == '#') {
@@ -209,7 +215,7 @@ bool SBGame::insert(int i, int j, bool isVertical, int length) noexcept {
 	for(int l = 0; l < length; ++l) {
 		int iCoord = i + (isVertical * l);
 		int jCoord = j + (!isVertical * l);
-		
+
 		// Check nearby
 		if(iCoord > 0 && _yourMap[iCoord - 1][jCoord] == '#') {
 			return 1;
@@ -227,14 +233,14 @@ bool SBGame::insert(int i, int j, bool isVertical, int length) noexcept {
 			if((jCoord > 0 && _yourMap[iCoord - 1][jCoord - 1] == '#') ||
 				(jCoord < 9 && _yourMap[iCoord - 1][jCoord + 1] == '#'))
 			{
-				return 1;	
+				return 1;
 			}
 		}
 		if(iCoord < 9) {
 			if((jCoord > 0 && _yourMap[iCoord + 1][jCoord - 1] == '#') ||
 				(jCoord < 9 && _yourMap[iCoord + 1][jCoord + 1] == '#'))
 			{
-				return 1;	
+				return 1;
 			}
 		}
 	}
@@ -246,7 +252,7 @@ bool SBGame::insert(int i, int j, bool isVertical, int length) noexcept {
 	}
 	return 0;
 }
-SBGame::SBGame() 
+SBGame::SBGame()
 	: _mainScreen("\
 +=======================================+=+=======================================+\n\
 |              Your Map                 | |            Opponent's map             |\n\
@@ -274,8 +280,8 @@ SBGame::SBGame()
 |   |   |   |   |   |   |   |   |   |   |9|   |   |   |   |   |   |   |   |   |   |\n\
 |---^---^---^---^---^---^---^---^---^---|-|---^---^---^---^---^---^---^---^---^---|\n\
 +=======================================+=+=======================================+\
-"),
-	_yourMap{
+")
+  , _yourMap{
 		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
 		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
 		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
@@ -286,9 +292,8 @@ SBGame::SBGame()
 		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
 		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
 		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}
-	},
-
-	_opntMap{
+	}
+  , _opntMap{
 		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
 		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
 		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
@@ -304,7 +309,7 @@ SBGame::SBGame()
 
 void SBGame::print() const noexcept {
 	clearScreen();
-	std::cout << _mainScreen << std::endl;	
+	std::cout << _mainScreen << std::endl;
 }
 
 bool SBGame::setupFleet() noexcept {
@@ -330,12 +335,10 @@ bool SBGame::setupFleet() noexcept {
 					coordinates % 10,
 					isVertical,
 					len
-				)) 
+				))
 				{
-					std::cout << 
-						"Boats should have distance of at least 1!" <<
-						std::endl;	
-					continue;
+					std::cout << "Boats should have distance of at least 1!" << std::endl;
+          continue;
 				}
 				break;
 			}
@@ -370,7 +373,7 @@ void SBGame::checkReady(Socket* s) const noexcept {
 		exit(1);
 	}
 
-	std::string msg; 
+	std::string msg;
 	try {
 		msg = s->Read(1024);
 	} catch(std::exception& e) {
@@ -431,7 +434,7 @@ void SBGame::startCommunication(Socket* s, const bool& YOU_ARE_HOST) noexcept {
 
 			if(hitStatus == "") {
 				std::cout << "Opponent closed the connection" << std::endl;
-				exit(0);		
+				exit(0);
 			}
 
 			processStatus(hitStatus[0], i, j);
@@ -442,7 +445,7 @@ void SBGame::startCommunication(Socket* s, const bool& YOU_ARE_HOST) noexcept {
 			}
 		} else {
 			std::cout << "Waiting for Opponent's message..." << std::endl;
-			
+
 			std::string coordinates;
 			try {
 				coordinates = s->Read(1024);
@@ -452,7 +455,7 @@ void SBGame::startCommunication(Socket* s, const bool& YOU_ARE_HOST) noexcept {
 
 			if(coordinates == "") {
 				std::cout << "Opponent closed the connection" << std::endl;
-				exit(0);		
+				exit(0);
 			}
 
 			std::cout << "Got coordinates: (Raw: " << coordinates <<
@@ -486,7 +489,7 @@ bool SBGame::areValidCoordinates(int& i, int& j) const noexcept {
 	if((i < 0) || (i > 9) || (j < 0) || (j > 9)) {
 		return false;
 	}
-	
+
 	if(_opntMap[i][j] != ' ') {
 		return false;
 	}
@@ -499,7 +502,7 @@ void SBGame::processStatus(char& status, int& i, int& j) noexcept {
 		std::cout << "You won!" << std::endl;
 		exit(0);
 	}
-	
+
 	if(status == '#') {
 		_opntMap[i][j] = '*';
 	} else if(status == 'D') {
@@ -508,16 +511,16 @@ void SBGame::processStatus(char& status, int& i, int& j) noexcept {
 	} else {
 		_opntMap[i][j] = status;
 	}
-	draw(status, i, j, 42);	
+	draw(status, i, j, 42);
 }
 
 char SBGame::getHitStatus(int& i, int& j) noexcept {
 	hit(i, j);
-	
+
 	if(_yourMap[i][j] == 'X') {
 		return 'X';
 	}
-	
+
 	if(isDestroyed(i, j)) {
 		destroy(i, j, false);
 		if(isAllFleetDestroyed()) {

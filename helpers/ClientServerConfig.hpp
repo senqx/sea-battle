@@ -1,9 +1,9 @@
 #ifndef __CLIENT_SERVER_CONFIG__
 #define __CLIENT_SERVER_CONFIG__
 
-#include <vector>
+#include <string>
+
 #include "../Socket/Socket.hpp"
-#include "IPPortConfig.hpp"
 
 Socket* hostServer(int& port, Socket& s);
 
