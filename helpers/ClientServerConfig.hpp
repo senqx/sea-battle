@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "../Socket/Socket.hpp"
+#include "../network/Socket.hpp"
 
 Socket* hostServer(int& port, Socket& s);
 

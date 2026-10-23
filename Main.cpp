@@ -1,33 +1,32 @@
 #include "helpers/ClientServerConfig.hpp"
 #include "game/SBGame.hpp"
-
-bool YOU_ARE_HOST = false;
+#include <iostream>
+#include <memory>
+#include "network/TerminalInput.hpp"
 
 int main(int argc, char* argv[]) {
-	std::string ip;
-	int port;
-	
-	Socket s(IPV4, TCP);
-	SBGame game;
-	
-	int res = handle_arguments(argc, argv, ip, port);
-	
-	if(res == 1) {
-		// You are Hosting
-		Socket* ans = hostServer(port, s);
-		YOU_ARE_HOST = true;
-		game.start();
-		game.checkReady(ans);
-		game.startCommunication(ans, YOU_ARE_HOST);	
-	} else if(res == 0) {
-		// You are Client
-		connect(ip, port, s);
-		YOU_ARE_HOST = false;
-		game.start();
-		game.checkReady(&s);
-		game.startCommunication(&s, YOU_ARE_HOST);	
-	} else {
-		exit(1);
-	}
-	return 0;
+    try {
+        std::string ip;
+        int port = 0;
+        int mode = handle_arguments(argc, argv, ip, port);
+        if (mode < 0) return 1;
+        if (mode == 2) return 0;
+        Socket socket(IPV4, TCP);
+        std::unique_ptr<Socket> peer;
+        Socket* connection = &socket;
+        if (mode == 1) {
+            peer.reset(hostServer(port, socket));
+            connection = peer.get();
+        } else {
+            connect(ip, port, socket);
+        }
+        TerminalInput::peerFd = connection->descriptor();
+        SBGame game;
+        game.start();
+        game.checkReady(connection);
+        game.startCommunication(connection, mode == 1);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        return 1;
+    }
 }

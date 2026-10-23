@@ -1,17 +1,25 @@
-CC = g++
-CFLAGS = -O3 -Wall
+CXX ?= g++
+CPPFLAGS ?=
+CXXFLAGS ?= -O2 -std=c++17 -Wall -Wextra -Wpedantic
+LDFLAGS ?=
+SOURCES = Main.cpp game/SBGame.cpp helpers/ClientServerConfig.cpp helpers/IPPortConfig.cpp
+OBJECTS = $(SOURCES:.cpp=.o)
 
-SeaBattle: Main.o SBGame.o ClientServerConfig.o IPPortConfig.o
-	$(CC) $(CFLAGS) -o SeaBattle Main.o SBGame.o ClientServerConfig.o IPPortConfig.o
+SeaBattle: $(OBJECTS)
+	$(CXX) $(LDFLAGS) -o $@ $^
 
-SBGame.o: ./game/SBGame.hpp ./game/SBGame.cpp
-	$(CC) $(CFLAGS) -c ./game/SBGame.cpp
+%.o: %.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
-ClientServerConfig.o: ./helpers/ClientServerConfig.hpp ./helpers/ClientServerConfig.cpp
-	$(CC) $(CFLAGS) -c ./helpers/ClientServerConfig.cpp
+input_tests: tests/input_tests.cpp helpers/IPPortConfig.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
-IPPortConfig.o: ./helpers/IPPortConfig.hpp ./helpers/IPPortConfig.cpp
-	$(CC) $(CFLAGS) -c ./helpers/IPPortConfig.cpp
+test: SeaBattle input_tests
+	./input_tests
+	python3 tests/game_tests.py
 
 clean:
-	rm -r *.o SeaBattle
+	$(RM) $(OBJECTS) $(OBJECTS:.o=.d) SeaBattle input_tests
+
+-include $(OBJECTS:.o=.d)
+.PHONY: test clean
